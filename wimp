@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# initializes the current directory for wimp, calls create_directories and create_daemon
+# then runs watch in the background
+wimp_init() {
+  mkdir ./src/
+  mkdir ./includes/
+  mkdir ./public/
+  # Setup systemd to run watch on startup
+}
+# creates the src directory where markdown files and subdirectories are modified, watched
+wimp_create_directories() {
+  echo "TODO create directories"
+}
+# checks if the watch function is going to be run on startup using systemd
+wimp_create_daemon() {
+  echo "TODO create daemon"
+}
+# launches inotifywait to watch for writes to src files in order to compile them to html
+wimp_watch() {
+  while inotifywait -qre close_write ./src/
+  do
+      echo "TODO: compile modified file"
+  done &
+}
+# compiles mardown file in src to html file in public using pandoc
+wimp_compile() {
+  # check that directories exist using [ -d /path/to/directory ]
+  # similarly, -f can be used for files
+  pandoc -H includes/head.html -B includes/before.html -A includes/after.html \
+-o $@.html $@ ';'
+}
+# compiles all markdown files in src into html files in public using pandoc
+wimp_compile_all() {
+  find ./src/ -name '*.md' -type f -exec pandoc \
+-H includes/head.html -B includes/before.html -A includes/after.html -o {}.html {} ';'
+}
+wimp_clean() {
+  echo "TODO clean directory and free daemon"
+}
+
+# BELOW, the interface for the script defined
+if [ $# -eq 0 ]
+then
+  echo "TODO: program in default behaviour here"
+  # check if src/ includes/ and public/ directories exist
+  # if not, run init
+  # check if watch runs on startup
+  # if not, setup systemd to run watch on startup
+  # run watch
+else
+  cmd=$1 shift
+  
+  case $cmd in
+    (init) wimp_init ;;
+    (watch) wimp_watch ;;
+    (compile) wimp_compile ;;
+    (compile-all) wimp_compile_all ;;
+    (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
+static website";;
+    (*) echo -e "UNRECOGNIZED COMMAND\n(run \`wimp help\` for more information)" ;;
+  esac
+fi
