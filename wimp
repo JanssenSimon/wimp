@@ -3,9 +3,8 @@
 # initializes the current directory for wimp, calls create_directories and create_daemon
 # then runs watch in the background
 wimp_init() {
-  mkdir ./src/
-  mkdir ./includes/
-  mkdir ./public/
+  mkdir ./src/; mkdir ./includes/; mkdir ./public/; touch ./includes/head.html
+  touch ./includes/before.html; touch ./includes/after.html
   # Setup systemd to run watch on startup
 }
 # creates the src directory where markdown files and subdirectories are modified, watched
@@ -24,16 +23,19 @@ wimp_watch() {
   done &
 }
 # compiles mardown file in src to html file in public using pandoc
+# TODO: get this to have the same behaviour as compile-all
 wimp_compile() {
   # check that directories exist using [ -d /path/to/directory ]
   # similarly, -f can be used for files
   pandoc -H includes/head.html -B includes/before.html -A includes/after.html \
--o $@.html $@ ';'
+-o $@.html $@ \;
 }
 # compiles all markdown files in src into html files in public using pandoc
 wimp_compile_all() {
-  find ./src/ -name '*.md' -type f -exec pandoc \
--H includes/head.html -B includes/before.html -A includes/after.html -o {}.html {} ';'
+  find ./src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
+outpath="./public/${outpath##*/src/}"; if ! [ -d "${outpath%/*}" ]; then \
+mkdir "${outpath%/*}"; fi; pandoc -s "$0" -H includes/head.html \
+-B includes/before.html -A includes/after.html -o $outpath' {} \;
 }
 wimp_clean() {
   echo "TODO clean directory and free daemon"

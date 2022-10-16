@@ -4,7 +4,7 @@ files into html pages.
 
 ## DEPENDENCIES:
 1. Linux (using systemd)
-2. Posix compliant shell (bash, dash work)
+2. Posix compliant shell (some other shells work)
 3. pandoc
 4. inotify-tools
 
@@ -22,8 +22,6 @@ files into html pages.
   - --template
   - -V
   - --css
-2. make it so that html files are sent into public
-   at the same time, rename so that .html instead of .md.html
-3. figure out how to run on startup or something when initializing
+2. figure out how to run on startup or something when initializing
    use systemd to make it work
-4. make names of folders and things configurable using variables
+3. make names of folders and things configurable using variables
