@@ -1,44 +1,47 @@
 #!/bin/sh
 
-# initializes the current directory for wimp, calls create_directories and create_daemon
-# then runs watch in the background
-wimp_init() {
-  mkdir ./src/; mkdir ./includes/; mkdir ./public/; touch ./includes/head.html
-  touch ./includes/before.html; touch ./includes/after.html
-  # Setup systemd to run watch on startup
-}
 # creates the src directory where markdown files and subdirectories are modified, watched
 wimp_create_directories() {
-  echo "TODO create directories"
+  mkdir ./src/; mkdir ./includes/; mkdir ./public/; touch ./includes/head.html
+  touch ./includes/before.html; touch ./includes/after.html
 }
 # checks if the watch function is going to be run on startup using systemd
 wimp_create_daemon() {
   echo "TODO create daemon"
 }
-# launches inotifywait to watch for writes to src files in order to compile them to html
-wimp_watch() {
-  while inotifywait -qre close_write ./src/
-  do
-      echo "TODO: compile modified file"
-  done &
-}
 # compiles mardown file in src to html file in public using pandoc
-# TODO: get this to have the same behaviour as compile-all
 wimp_compile() {
-  # check that directories exist using [ -d /path/to/directory ]
-  # similarly, -f can be used for files
-  pandoc -H includes/head.html -B includes/before.html -A includes/after.html \
--o $@.html $@ \;
+  sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
+if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
+pandoc -s "$0" -H includes/head.html -B includes/before.html \
+-A includes/after.html -o $outpath' "$@"
 }
 # compiles all markdown files in src into html files in public using pandoc
 wimp_compile_all() {
+  # TODO make the deletion of everything in public optional
+  rm -rf ./public/*
   find ./src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
-outpath="./public/${outpath##*/src/}"; if ! [ -d "${outpath%/*}" ]; then \
+outpath="./public/${outpath##*src/}"; if ! [ -d "${outpath%/*}" ]; then \
 mkdir "${outpath%/*}"; fi; pandoc -s "$0" -H includes/head.html \
 -B includes/before.html -A includes/after.html -o $outpath' {} \;
 }
+# launches inotifywait to watch for writes to src files in order to compile them to html
+wimp_watch() {
+  inotifywait -qmre modify --format "%w%f" ./src/ |\
+  while read filepath;
+  do
+    wimp_compile $filepath
+  done &
+}
+# initializes the current directory for wimp, calls create_directories and create_daemon
+# then runs watch in the background
+wimp_init() {
+  wimp_create_directories
+  wimp_create_daemon
+  wimp_watch
+}
 wimp_clean() {
-  echo "TODO clean directory and free daemon"
+  rm -rf ./src; rm -rf ./public; rm -rf ./includes
 }
 
 # BELOW, the interface for the script defined
@@ -56,8 +59,9 @@ else
   case $cmd in
     (init) wimp_init ;;
     (watch) wimp_watch ;;
-    (compile) wimp_compile ;;
+    (compile) wimp_compile $@;;
     (compile-all) wimp_compile_all ;;
+    (clean) wimp_clean ;;
     (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
 static website";;
     (*) echo -e "UNRECOGNIZED COMMAND\n(run \`wimp help\` for more information)" ;;
