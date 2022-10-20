@@ -6,8 +6,24 @@ wimp_create_directories() {
   touch ./includes/before.html; touch ./includes/after.html
 }
 # checks if the watch function is going to be run on startup using systemd
+#TODO bug to fix here with path of script
+#TODO check if file exists before doing this whole thing
+#TODO change this so that it works with multiple directories
 wimp_create_daemon() {
-  echo "TODO create daemon"
+  touch /etc/systemd/system/wimp.service
+  echo "[Unit]
+Description=Run wimp website generator
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+ExecStart=$(pwd)/wimp
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target" > /etc/systemd/system/wimp.service
+  systemctl daemon-reload
+  systemctl enable wimp.service
 }
 # compiles mardown file in src to html file in public using pandoc
 wimp_compile() {
