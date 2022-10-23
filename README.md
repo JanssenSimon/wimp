@@ -20,4 +20,3 @@ files into html pages.
 ## What's in the works?
 1. Have the wimp delete html files when their corresponding
    markdown file is deleted from `src/`.
-2. add a config option for compilation of all files.
