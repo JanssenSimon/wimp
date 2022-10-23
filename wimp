@@ -1,5 +1,7 @@
 #!/bin/sh
 
+delete_all=true
+
 # call any named bash function under sudo with arbitrary arguments
 # from Charles Duffy on stackoverflow, thanks Charles!
 run_escalated_function() {
@@ -43,7 +45,7 @@ pandoc -s "$0" -H includes/head.html -B includes/before.html \
 # compiles all markdown files in src into html files in public using pandoc
 wimp_compile_all() {
   # TODO make the deletion of everything in public optional
-  rm -rf ./public/*
+  if [ "$delete_all" = true ] ; then rm -rf ./public/* ; fi
   find ./src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
 outpath="./public/${outpath##*src/}"; if ! [ -d "${outpath%/*}" ]; then \
 mkdir "${outpath%/*}"; fi; pandoc -s "$0" -H includes/head.html \
