@@ -15,8 +15,3 @@ files into html pages.
 3. Point a webserver to `public/`
 4. ???
 5. Profit.
-
-
-## What's in the works?
-- Have the wimp delete html files when their corresponding
-  markdown file is deleted from `src/`.

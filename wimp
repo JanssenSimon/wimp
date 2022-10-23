@@ -52,10 +52,13 @@ mkdir "${outpath%/*}"; fi; pandoc --quiet -s "$0" -H includes/head.html \
 }
 # launches inotifywait to watch for writes to src files in order to compile them to html
 wimp_watch() {
-  inotifywait -qmre modify --format "%w%f" ./src/ |\
-  while read filepath;
+  inotifywait -qmre modify -e delete --format "%e %w%f" ./src/ |\
+  while read inotifymessage;
   do
-    wimp_compile $filepath
+    filepath=${inotifymessage##* }
+    outpath="${filepath%.md}.html"; outpath="./public/${outpath##*src/}"
+    if [ "${inotifymessage%% *}" = DELETE ]; then rm -rf $outpath
+    else wimp_compile $filepath; fi
   done &
 }
 # initializes the current directory for wimp, calls create_directories and create_daemon
