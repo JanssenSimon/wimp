@@ -3,7 +3,7 @@ Dynamic Static Website generator using inotify and pandoc to convert Markdown
 files into html pages.
 
 ## DEPENDENCIES:
-- linux (using systemd)
+- linux (using systemd and sudo)
 - posix compliant shell (some other shells work)
 - pandoc
 - inotify-tools
