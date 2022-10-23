@@ -1,29 +1,37 @@
 #!/bin/sh
 
+# call any named bash function under sudo with arbitrary arguments
+# from Charles Duffy on stackoverflow, thanks Charles!
+run_escalated_function() {
+  local function_name args_q
+  function_name=$1; shift || return
+  printf -v args_q '%q ' "$@"
+  sudo bash -c "$(declare -f "$function_name"); $function_name $args_q"
+}
+
 # creates the src directory where markdown files and subdirectories are modified, watched
 wimp_create_directories() {
   mkdir ./src/; mkdir ./includes/; mkdir ./public/; touch ./includes/head.html
   touch ./includes/before.html; touch ./includes/after.html
 }
 # checks if the watch function is going to be run on startup using systemd
-#TODO bug to fix here with path of script
 #TODO check if file exists before doing this whole thing
 #TODO change this so that it works with multiple directories
 wimp_create_daemon() {
-  touch /etc/systemd/system/wimp.service
-  echo "[Unit]
+  sudo touch /etc/systemd/system/wimp.service
+  sudo echo "[Unit]
 Description=Run wimp website generator
 
 [Service]
 Type=simple
 RemainAfterExit=yes
-ExecStart=$(pwd)/wimp
+ExecStart=$(pwd)/$0
 TimeoutStartSec=0
 
 [Install]
 WantedBy=default.target" > /etc/systemd/system/wimp.service
-  systemctl daemon-reload
-  systemctl enable wimp.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable wimp.service
 }
 # compiles mardown file in src to html file in public using pandoc
 wimp_compile() {
@@ -53,11 +61,13 @@ wimp_watch() {
 # then runs watch in the background
 wimp_init() {
   wimp_create_directories
-  wimp_create_daemon
+  run_escalated_function wimp_create_daemon
   wimp_watch
 }
 wimp_clean() {
   rm -rf ./src; rm -rf ./public; rm -rf ./includes
+  sudo systemctl disable wimp.service
+  sudo rm /etc/systemd/system/wimp.service
 }
 
 # BELOW, the interface for the script defined

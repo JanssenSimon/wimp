@@ -18,12 +18,11 @@ files into html pages.
 
 
 ## What's in the works?
-1. Figure out how to run wimp watch on startup using systemd.
-2. Have the wimp delete html files when their corresponding markdown file is deleted
-   from `src/`.
-3. Make names of folders configurable using variables;
+1. Have the wimp delete html files when their corresponding
+   markdown file is deleted from `src/`.
+2. Make names of folders configurable using variables;
    also add a config option for compilation of all files.
-4. Support the following flags for pandoc:
+3. Support the following flags for pandoc:
     - --template
     - -V
     - --css
