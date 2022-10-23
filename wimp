@@ -12,16 +12,23 @@ run_escalated_function() {
 }
 
 # creates the src directory where markdown files and subdirectories are modified, watched
+# TODO make sure all paths in this script are absolute paths
 wimp_create_directories() {
-  mkdir ./src/; mkdir ./includes/; mkdir ./public/; touch ./includes/head.html
-  touch ./includes/before.html; touch ./includes/after.html
+  if ! [ -d "./src" ]; then mkdir ./src/; fi
+  if ! [ -d "./includes" ]; then mkdir ./includes/; fi
+  if ! [ -d "./public" ]; then mkdir ./public/; fi
+  if ! [ -f "./includes/head.html" ]; then touch ./includes/head.html; fi
+  if ! [ -f "./includes/before.html" ]; then touch ./includes/before.html; fi
+  if ! [ -f "./includes/after.html" ]; then touch ./includes/after.html; fi
 }
 # checks if the watch function is going to be run on startup using systemd
-#TODO check if file exists before doing this whole thing
 #TODO change this so that it works with multiple directories
 wimp_create_daemon() {
-  sudo touch /etc/systemd/system/wimp.service
-  sudo echo "[Unit]
+  if ! [ -f "/etc/systemd/system/wimp.service" ];
+  then
+    touch /etc/systemd/system/wimp.service
+  fi
+  echo "[Unit]
 Description=Run wimp website generator
 
 [Service]
@@ -32,8 +39,8 @@ TimeoutStartSec=0
 
 [Install]
 WantedBy=default.target" > /etc/systemd/system/wimp.service
-  sudo systemctl daemon-reload
-  sudo systemctl enable wimp.service
+  systemctl daemon-reload
+  systemctl enable wimp.service
 }
 # compiles mardown file in src to html file in public using pandoc
 wimp_compile() {
@@ -42,7 +49,7 @@ if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
 pandoc --quiet -s "$0" -H includes/head.html -B includes/before.html \
 -A includes/after.html -o $outpath' "$@"
 }
-# compiles all markdown files in src into html files in public using pandoc
+# compiles ALL markdown files in src into html files in public using pandoc
 wimp_compile_all() {
   if [ "$delete_all" = true ] ; then rm -rf ./public/* ; fi
   find ./src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
@@ -51,6 +58,7 @@ mkdir "${outpath%/*}"; fi; pandoc --quiet -s "$0" -H includes/head.html \
 -B includes/before.html -A includes/after.html -o $outpath' {} \;
 }
 # launches inotifywait to watch for writes to src files in order to compile them to html
+# TODO figure out how to track inotify instances to replace existing if run twice
 wimp_watch() {
   inotifywait -qmre modify -e delete --format "%e %w%f" ./src/ |\
   while read inotifymessage;
@@ -68,6 +76,8 @@ wimp_init() {
   run_escalated_function wimp_create_daemon
   wimp_watch
 }
+# Deletes all files and folders related to the WIMP
+# TODO kill inotifywait process associated with folder
 wimp_clean() {
   rm -rf ./src; rm -rf ./public; rm -rf ./includes
   sudo systemctl disable wimp.service
@@ -77,12 +87,7 @@ wimp_clean() {
 # BELOW, the interface for the script defined
 if [ $# -eq 0 ]
 then
-  echo "TODO: program in default behaviour here"
-  # check if src/ includes/ and public/ directories exist
-  # if not, run init
-  # check if watch runs on startup
-  # if not, setup systemd to run watch on startup
-  # run watch
+  wimp_init
 else
   cmd=$1 shift
   
