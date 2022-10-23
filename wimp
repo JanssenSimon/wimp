@@ -39,16 +39,15 @@ WantedBy=default.target" > /etc/systemd/system/wimp.service
 wimp_compile() {
   sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
 if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
-pandoc -s "$0" -H includes/head.html -B includes/before.html \
+pandoc --quiet -s "$0" -H includes/head.html -B includes/before.html \
 -A includes/after.html -o $outpath' "$@"
 }
 # compiles all markdown files in src into html files in public using pandoc
 wimp_compile_all() {
-  # TODO make the deletion of everything in public optional
   if [ "$delete_all" = true ] ; then rm -rf ./public/* ; fi
   find ./src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
 outpath="./public/${outpath##*src/}"; if ! [ -d "${outpath%/*}" ]; then \
-mkdir "${outpath%/*}"; fi; pandoc -s "$0" -H includes/head.html \
+mkdir "${outpath%/*}"; fi; pandoc --quiet -s "$0" -H includes/head.html \
 -B includes/before.html -A includes/after.html -o $outpath' {} \;
 }
 # launches inotifywait to watch for writes to src files in order to compile them to html

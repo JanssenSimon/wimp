@@ -18,5 +18,5 @@ files into html pages.
 
 
 ## What's in the works?
-1. Have the wimp delete html files when their corresponding
-   markdown file is deleted from `src/`.
+- Have the wimp delete html files when their corresponding
+  markdown file is deleted from `src/`.
