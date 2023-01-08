@@ -16,10 +16,12 @@ wimp_init() {
   else
     mkdir -p src template public .wimp
   fi
+  #TODO in 15 lines, create wimp service
 }
 
 wimp_compile() {
   #TODO make sure this uses template dynamically
+  #TODO convert links automatically
   sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
 if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
 pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
@@ -28,6 +30,7 @@ pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
 
 wimp_compile_all() {
   #TODO make sure this uses template dynamically
+  #TODO convert links automatically
   find $wimp_dir/../src/ -name '*.md' -type f -exec sh -c \
 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
 if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
@@ -35,15 +38,18 @@ pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
 -A template/after.html -o $outpath' {} \;
 }
 
-wimp_watch() {
+wimp_status() {
+  #TODO systemctl status wimp.service
   echo "TODO"
 }
 
-wimp_stop() {
+wimp_restart() {
+  #TODO systemctl restart wimp.service
   echo "TODO"
 }
 
 wimp_clean() {
+  #TODO stop
   rm -rf $wimp_dir/../src $wimp_dir/../public $wimp_dir/../template $wimp_dir
 }
 
@@ -67,18 +73,19 @@ validate() {
 wimp_dir="$(find_config ".wimp")"
 if [ $# -eq 0 ]
 then
-  echo "TODO, put here the help message"
+  echo -e "usage: wimp <command>\n(run \`wimp help\` for more information)"
 else
   cmd=$1 shift
   case $cmd in
-    (init) wimp_init ;;
-    (watch) validate; wimp_watch ;;
+    (init) wimp_init;;
+    (status) validate; wimp_status;;
+    (restart) validate; wimp_restart;;
     (compile) validate; wimp_compile $@;;
-    (compile-all) validate; wimp_compile_all ;;
-    (stop) validate; wimp_stop ;;
-    (clean) validate; wimp_clean ;;
-    (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
-static website";;
-    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)" ;;
+    (compile-all) validate; wimp_compile_all;;
+    (clean) validate; wimp_clean;;
+    (help) echo -e "The WIMP uses pandoc and inotify to dynamically manage a \
+static website\ninit: create a wimp\ncompile-all: manually compile src files\n\
+clean: remove all traces of wimp";;
+    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)";;
   esac
 fi
