@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 # first thing, we check for a wimp config file and store the path
 # for this we use jeff schaller's find_config()
