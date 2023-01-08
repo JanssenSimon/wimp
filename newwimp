@@ -1,0 +1,89 @@
+#/bin/sh
+
+# first thing, we check for a wimp config file and store the path
+# for this we use jeff schaller's find_config()
+# then we refer to the existence of that variable for all checks
+# we create a function validate()
+# it checks existence of wimp file and outputs error message if absent
+# we then chain validate with proper functions in interface
+# such that if there's no config, the proper function doesnt run
+# init, help, nothing, and star are absent from this
+
+# from Jeff Schaller on stackoverflow, thanks Jeff!
+find_config() {
+  if [ -d "$1" ]; then
+    echo "${PWD%/}/$1"
+  elif [ "$PWD" = / ]; then
+    false
+  else
+    (cd .. && find_config "$1") # subshell so we don't affect caller's $PWD
+  fi
+}
+
+# from Charles Duffy on stackoverflow, thanks Charles!
+run_escalated_function() {
+  local function_name args_q
+  function_name=$1; shift || return
+  printf -v args_q '%q ' "$@"
+  sudo bash -c "$(declare -f "$function_name"); $function_name $args_q"
+}
+
+wimp_init() {
+  if [ -d "$wimp_dir" ]; then
+    echo "This directory is already watched by a wimp"
+  elif [ -n $(find . -type d -name ".wimp") ]; then
+    echo "This directory already contains a wimp"
+  else
+    mkdir -p src template public .wimp
+  fi
+}
+
+wimp_create_daemon() {
+  echo "TODO"
+}
+
+wimp_compile() {
+  echo "TODO"
+}
+
+wimp_compile_all() {
+  echo "bruh"
+}
+
+wimp_watch() {
+  echo "TODO"
+}
+
+wimp_clean() {
+  rm -rf $wimp_dir/../src $wimp_dir/../public $wimp_dir/../template $wimp_dir
+}
+
+wimp_stop() {
+  echo "TODO"
+}
+
+validate() {
+  if [ ! -d "$wimp_dir" ]; then
+    echo "This directory is not watched by a wimp"
+    exit
+  fi
+}
+
+wimp_dir="$(find_config ".wimp")"
+if [ $# -eq 0 ]
+then
+  echo "TODO, put here the help message"
+else
+  cmd=$1 shift
+  case $cmd in
+    (init) wimp_init ;;
+    (watch) validate; wimp_watch ;;
+    (compile) validate; wimp_compile $@;;
+    (compile-all) validate; wimp_compile_all ;;
+    (clean) validate; wimp_clean ;;
+    (stop) validate; wimp_stop ;;
+    (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
+static website";;
+    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)" ;;
+  esac
+fi

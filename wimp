@@ -1,12 +1,35 @@
 #!/bin/sh
 
+
+# from Jeff Schaller on stackoverflow, thanks Jeff!
+find_config() {
+  if [ -d "$1" ]; then
+    echo "${PWD%/}/$1"
+  elif [ "$PWD" = / ]; then
+    false
+  else
+    (cd .. && find_config "$1") # subshell so we don't affect caller's $PWD
+  fi
+}
+
+wimp_init() {
+  if [[ -n $(find_config ".wimp") ]]; then
+    echo "This directory is already watched by a wimp"
+  elif [[ -n $(find . -type d -name ".wimp") ]]; then
+    echo "This directory already contains a wimp"
+  else
+    mkdir -p src template public .wimp
+  fi
+}
+
+
+
 delete_all=true
 
 wimp_dir="$(pwd)/$0"
 wimp_dir="${wimp_dir%/*}"
 echo $wimp_dir
 
-# call any named bash function under sudo with arbitrary arguments
 # from Charles Duffy on stackoverflow, thanks Charles!
 run_escalated_function() {
   local function_name args_q
@@ -15,14 +38,21 @@ run_escalated_function() {
   sudo bash -c "$(declare -f "$function_name"); $function_name $args_q"
 }
 
+# from Jeff Schaller on stackoverflow, thanks Jeff!
+findconfig() {
+  if [ -d "$1" ]; then
+    printf '%s\n' "${PWD%/}/$1"
+  elif [ "$PWD" = / ]; then
+    false
+  else
+    # a subshell so that we don't affect the caller's $PWD
+    (cd .. && findconfig "$1")
+  fi
+}
+
 # creates the src directory where markdown files and subdirectories are modified, watched
 wimp_create_directories() {
-  if ! [ -d "$wimp_dir/src" ]; then mkdir $wimp_dir/src/; fi
-  if ! [ -d "$wimp_dir/includes" ]; then mkdir $wimp_dir/includes/; fi
-  if ! [ -d "$wimp_dir/public" ]; then mkdir $wimp_dir/public/; fi
-  if ! [ -f "$wimp_dir/includes/head.html" ]; then touch $wimp_dir/includes/head.html; fi
-  if ! [ -f "$wimp_dir/includes/before.html" ]; then touch $wimp_dir/includes/before.html; fi
-  if ! [ -f "$wimp_dir/includes/after.html" ]; then touch $wimp_dir/includes/after.html; fi
+  mkdir -p src includes public .wimp
 }
 # checks if the watch function is going to be run on startup using systemd
 #TODO change this so that it works with multiple directories
@@ -84,15 +114,19 @@ wimp_init() {
 # Deletes all files and folders related to the WIMP
 # TODO kill inotifywait process associated with folder
 wimp_clean() {
-  rm -rf $wimp_dir/src; rm -rf $wimp_dir/public; rm -rf $wimp_dir/includes
+  rm -rf $wimp_dir/src $wimp_dir/public $wimp_dir/includes
   sudo systemctl disable wimp.service
   sudo rm /etc/systemd/system/wimp.service
+}
+
+wimp_stop() {
+  echo "Bruh"
 }
 
 # BELOW, the interface for the script defined
 if [ $# -eq 0 ]
 then
-  wimp_init
+  echo "TODO, put here the help message"
 else
   cmd=$1 shift
   
@@ -102,8 +136,9 @@ else
     (compile) wimp_compile $@;;
     (compile-all) wimp_compile_all ;;
     (clean) wimp_clean ;;
+    (stop) wimp_stop ;;
     (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
 static website";;
-    (*) echo -e "UNRECOGNIZED COMMAND\n(run \`wimp help\` for more information)" ;;
+    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)" ;;
   esac
 fi

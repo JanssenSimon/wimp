@@ -1,0 +1,30 @@
+target: 100 lines or less and 3000 bytes or less
+first things first: case on the argument of the command to check what command is given to wimp
+
+
+
+
+
+
+this is how I imagine wimp works:
+git clone the script. leave the script someplace or copy the script into path.
+can initialize wimp in current directory by running wimp init. this creates directories for src, template, and public
+    if the files already exist, then the src files are compiled to public as normal
+    where src contains markdown src files where changes are watched, template contains modifiers for pandoc to include css and js, and public contains the resulting html files
+    the files in template would be optional, they have names which correspond to the different modifiers which exist in pandoc (head, foot, template, etc)
+    one simply has to point an https server to the public directory to have everything easy as pie
+    the initializing wimp also add secret file which contains inotify PID. this file is watched, if it dies, the process is stopped
+    wimp also has to check if it is already in a wimp directory before initializing. any subsequent wimp files look up in the file tree for secret PID file to know if in wimp dir
+    wimp init needs to fail gracefully if there are too many inotify processes at the time, compiles everything, but doesn't track files
+can stop wimp which stops the inotify process and no longer tracks changes
+can call cleanup which stops the wimp if not already done, then deletes all of the files/folders related to wimp (deletes src, template, and public)
+can manually call compile-all or compile on a specific file if for some reason wimp hasnt caught it
+
+
+
+
+
+to implement:
+-dealing with arguments a la git
+-finding out if already in wimp directory
+-storing pid of inotify process
