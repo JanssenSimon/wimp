@@ -15,8 +15,25 @@ wimp_init() {
     echo "This directory already contains a wimp"
   else
     mkdir -p src template public .wimp
+    #TODO in 15 lines, create wimp service
+    #TODO dynamic service name (sanitizedPath-wimp.service)
+    #TODO have the service exec wimp_watch
+    if ! [ -f "/etc/systemd/system/wimp.service" ]; then
+      touch /etc/systemd/system/wimp.service
+    fi
+    echo "[Unit]
+Description=Run wimp website generator
+
+[Service]
+Type=simple
+ExecStart=$(pwd)/$0
+Restart=on-failure
+
+[Install]
+WantedBy=default.target" > /etc/systemd/system/wimp.service
+    systemctl daemon-reload
+    systemctl enable wimp.service
   fi
-  #TODO in 15 lines, create wimp service
 }
 
 wimp_compile() {
