@@ -18,21 +18,26 @@ wimp_init() {
     #TODO in 15 lines, create wimp service
     #TODO dynamic service name (sanitizedPath-wimp.service)
     #TODO have the service exec wimp_watch
-    if ! [ -f "/etc/systemd/system/wimp.service" ]; then
-      touch /etc/systemd/system/wimp.service
-    fi
-    echo "[Unit]
-Description=Run wimp website generator
-
-[Service]
-Type=simple
-ExecStart=$(pwd)/$0
-Restart=on-failure
-
-[Install]
-WantedBy=default.target" > /etc/systemd/system/wimp.service
-    systemctl daemon-reload
-    systemctl enable wimp.service
+service_name=$(pwd)-wimp.service
+#if ! [ -f "/etc/systemd/system/$service_name" ]; then
+#  touch /etc/systemd/system/$service_name
+#fi
+#echo "[Unit]\Description=Run wimp website generator\
+#[Service]\Type=simple
+#ExecStart=sh -c "
+#  inotifywait -qmre modify -e delete --format "%e %w%f" $wimp_dir/src/ |\
+#  while read inotifymessage;
+#  do
+#    filepath=${inotifymessage##* }
+#    outpath="${filepath%.md}.html"; outpath="$wimp_dir/public/${outpath##*src/}"
+#    if [ "${inotifymessage%% *}" = DELETE ]; then rm -rf $outpath
+#    else sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
+#if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
+#pandoc --quiet -s "$0" -H includes/head.html -B includes/before.html \
+#-A includes/after.html -o $outpath' $filepath; fi
+#  done &"\Restart=on-failure\
+#[Install]\WantedBy=default.target" > /etc/systemd/system/$service_name
+#sudo systemctl daemon-reload; sudo systemctl enable $service_name
   fi
 }
 
