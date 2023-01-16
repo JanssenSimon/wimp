@@ -16,22 +16,21 @@ service_name=$(echo $wimp_dir | openssl md5 | awk '{print $2 "-wimp.service"}')
 if ! [ -f "/etc/systemd/system/$service_name" ]; then
   touch /etc/systemd/system/$service_name
 fi
+echo "[Unit]
+Description=Run wimp website generator
 
-#echo "[Unit]\Description=Run wimp website generator\
-#[Service]\Type=simple
-#ExecStart=sh -c "
-#
-#inotifywait -qmre modify -e delete --format "%e %w%f" $wimp_dir/../src/ |\
-#while read inotifymessage; do
-#  filepath=${inotifymessage##* }
-#  outpath="${filepath%.md}.html"; outpath="$wimp_dir/../public/${outpath##*src/}"
-#  if [ "${inotifymessage%% *}" = DELETE ]; then rm -rf $outpath
-#  else sh -c 'if ! [ -d "${1%/*}" ]; then mkdir "${1%/*}"; fi
-#  pandoc --quiet -s "$0" -o "$1"' $filepath $outpath; fi
-#done"
-#
-#Restart=on-failure\
-#[Install]\WantedBy=default.target" > /etc/systemd/system/$service_name
+[Service]
+Type=simple
+ExecStart=sh -c \"inotifywait -qmre modify -e delete --format \\\"%e %w%f\\\" $wimp_dir/../src/ |\
+while read inotifymessage; do
+  filepath=\\\${inotifymessage##* }
+  outpath=\\\"\\\${filepath%.md}.html\\\"; outpath=\\\"$wimp_dir/../public/\\\${outpath##*src/}\\\"
+  if [ \\\"\\\${inotifymessage%% *}\\\" = DELETE ]; then rm -rf \\\$outpath
+  else sh -c 'if ! [ -d \\\"\\\${1%/*}\\\" ]; then mkdir \\\"\\\${1%/*}\\\"; fi
+  pandoc --quiet -s \\\"\\\$0\" -o \\\"\\\$1\\\"' \\\$filepath \\\$outpath; fi
+done\"
+Restart=on-failure
 
-#sudo systemctl daemon-reload; sudo systemctl enable $service_name
-
+[Install]
+WantedBy=default.target" > /etc/systemd/system/$service_name
+sudo systemctl daemon-reload; sudo systemctl enable $service_name
