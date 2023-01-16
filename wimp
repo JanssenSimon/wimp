@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # from Jeff Schaller on stackoverflow, thanks Jeff!
 find_config() {
   if [ -d "$1" ]; then
@@ -11,134 +10,93 @@ find_config() {
     (cd .. && find_config "$1") # subshell so we don't affect caller's $PWD
   fi
 }
+wimp_dir="$(find_config ".wimp")"
+
+service_name=$(echo $wimp_dir | openssl md5 | awk '{print $2 "-wimp.service"}')
 
 wimp_init() {
-  if [[ -n $(find_config ".wimp") ]]; then
+  if [ -d "$wimp_dir" ]; then
     echo "This directory is already watched by a wimp"
   elif [[ -n $(find . -type d -name ".wimp") ]]; then
     echo "This directory already contains a wimp"
   else
     mkdir -p src template public .wimp
-  fi
-}
-
-
-
-delete_all=true
-
-wimp_dir="$(pwd)/$0"
-wimp_dir="${wimp_dir%/*}"
-echo $wimp_dir
-
-# from Charles Duffy on stackoverflow, thanks Charles!
-run_escalated_function() {
-  local function_name args_q
-  function_name=$1; shift || return
-  printf -v args_q '%q ' "$@"
-  sudo bash -c "$(declare -f "$function_name"); $function_name $args_q"
-}
-
-# from Jeff Schaller on stackoverflow, thanks Jeff!
-findconfig() {
-  if [ -d "$1" ]; then
-    printf '%s\n' "${PWD%/}/$1"
-  elif [ "$PWD" = / ]; then
-    false
-  else
-    # a subshell so that we don't affect the caller's $PWD
-    (cd .. && findconfig "$1")
-  fi
-}
-
-# creates the src directory where markdown files and subdirectories are modified, watched
-wimp_create_directories() {
-  mkdir -p src includes public .wimp
-}
-# checks if the watch function is going to be run on startup using systemd
-#TODO change this so that it works with multiple directories
-wimp_create_daemon() {
-  if ! [ -f "/etc/systemd/system/wimp.service" ];
-  then
-    touch /etc/systemd/system/wimp.service
-  fi
-  echo "[Unit]
+    if ! [ -f "/etc/systemd/system/$service_name" ]; then
+      sudo touch /etc/systemd/system/$service_name
+    fi
+    echo "[Unit]
 Description=Run wimp website generator
-
 [Service]
 Type=simple
-RemainAfterExit=yes
-ExecStart=$(pwd)/$0
-TimeoutStartSec=0
-
+ExecStart=sh -c \"inotifywait -qmre modify -e delete --format \\\"%e %w%f\\\" $wimp_dir/../src/ | \\
+while read inotifymessage; do \\
+  filepath=\\\${inotifymessage##* } \\
+  outpath=\\\"\\\${filepath%.md}.html\\\"; outpath=\\\"$wimp_dir/../public/\\\${outpath##*src/}\\\" \\
+  if [ \\\"\\\${inotifymessage%% *}\\\" = DELETE ]; then rm -rf \\\$outpath \\
+  else sh -c 'if ! [ -d \\\"\\\${1%/*}\\\" ]; then mkdir \\\"\\\${1%/*}\\\"; fi \\
+  pandoc --quiet -s \\\"\\\$0\" -o \\\"\\\$1\\\"' \\\$filepath \\\$outpath; fi \\
+  done\"
+Restart=on-failure
 [Install]
-WantedBy=default.target" > /etc/systemd/system/wimp.service
-  systemctl daemon-reload
-  systemctl enable wimp.service
+WantedBy=default.target" | sudo tee /etc/systemd/system/$service_name
+    sudo systemctl daemon-reload; sudo systemctl enable $service_name; sudo systemctl start $service_name
+  fi
 }
-# compiles mardown file in src to html file in public using pandoc
+
 wimp_compile() {
+  #TODO make sure this uses template dynamically
+  #TODO convert links automatically
   sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
 if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
-pandoc --quiet -s "$0" -H includes/head.html -B includes/before.html \
--A includes/after.html -o $outpath' "$@"
+pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
+-A template/after.html -o $outpath' "$@"
 }
-# compiles ALL markdown files in src into html files in public using pandoc
-#TODO: make outpath absolute path by conserving subbing src with public
+
 wimp_compile_all() {
-  if [ "$delete_all" = true ] ; then rm -rf $wimp_dir/public/* ; fi
-  find $wimp_dir/src/ -name '*.md' -type f -exec sh -c 'outpath="${0%.md}.html";\
-outpath="./public/${outpath##*src/}"; if ! [ -d "${outpath%/*}" ]; then \
-mkdir "${outpath%/*}"; fi; pandoc --quiet -s "$0" -H includes/head.html \
--B includes/before.html -A includes/after.html -o $outpath' {} \;
+  #TODO make sure this uses template dynamically
+  #TODO convert links automatically
+  find $wimp_dir/../src/ -name '*.md' -type f -exec sh -c \
+'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
+if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
+pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
+-A template/after.html -o $outpath' {} \;
 }
-# launches inotifywait to watch for writes to src files in order to compile them to html
-# TODO figure out how to track inotify instances to replace existing if run twice
-# TODO do same substitution as in compile all for outpath
-wimp_watch() {
-  inotifywait -qmre modify -e delete --format "%e %w%f" $wimp_dir/src/ |\
-  while read inotifymessage;
-  do
-    filepath=${inotifymessage##* }
-    outpath="${filepath%.md}.html"; outpath="$wimp_dir/public/${outpath##*src/}"
-    if [ "${inotifymessage%% *}" = DELETE ]; then rm -rf $outpath
-    else wimp_compile $filepath; fi
-  done &
+
+wimp_status() {
+  sudo systemctl status $service_name
 }
-# initializes the current directory for wimp, calls create_directories and create_daemon
-# then runs watch in the background
-wimp_init() {
-  wimp_create_directories
-  run_escalated_function wimp_create_daemon
-  wimp_watch
+
+wimp_restart() {
+  sudo systemctl restart $service_name
 }
-# Deletes all files and folders related to the WIMP
-# TODO kill inotifywait process associated with folder
+
 wimp_clean() {
-  rm -rf $wimp_dir/src $wimp_dir/public $wimp_dir/includes
-  sudo systemctl disable wimp.service
-  sudo rm /etc/systemd/system/wimp.service
+  sudo systemctl stop $service_name
+  sudo rm /etc/systemd/system/$service_name
+  rm -rf $wimp_dir/../src $wimp_dir/../public $wimp_dir/../template $wimp_dir
 }
 
-wimp_stop() {
-  echo "Bruh"
+validate() {
+  if [ ! -d "$wimp_dir" ]; then
+    echo -e "This directory is not watched by a wimp\n(run \`wimp init\`)"; exit
+  fi
 }
 
-# BELOW, the interface for the script defined
 if [ $# -eq 0 ]
 then
-  echo "TODO, put here the help message"
+  echo -e "usage: wimp <command>\n(run \`wimp help\` for more information)"
 else
   cmd=$1 shift
-  
   case $cmd in
-    (init) wimp_init ;;
-    (watch) wimp_watch ;;
-    (compile) wimp_compile $@;;
-    (compile-all) wimp_compile_all ;;
-    (clean) wimp_clean ;;
-    (stop) wimp_stop ;;
-    (help) echo "The WIMP leverages pandoc and inotify to dynamically manage a \
-static website";;
-    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)" ;;
+    (init) wimp_init;;
+    (status) validate; wimp_status;;
+    (restart) validate; wimp_restart;;
+    (compile) validate; wimp_compile $@;;
+    (compile-all) validate; wimp_compile_all;;
+    (clean) validate; wimp_clean;;
+    (help) echo -e "The WIMP uses pandoc and inotify to dynamically manage a \
+static website\ninit: create a wimp\ncompile-all: manually compile src files\n\
+clean: remove all traces of wimp";;
+    (*) echo -e "UNRECOGNIZED COMMAND\nusage: wimp <command>\n(run \`wimp help\` for more information)";;
   esac
 fi

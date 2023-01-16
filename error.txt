@@ -1,0 +1,70 @@
+Jan 16 11:35:10 dhcp-10-51-251-30 systemd[1]: 68b329da9893e34099c7d8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit >
+Jan 16 11:35:10 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown e>
+Jan 16 11:35:10 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve >
+Jan 16 11:35:10 dhcp-10-51-251-30 systemd[1]: 68b329da9893e34099c7d8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit >
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown e>
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve >
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: 68b329da9893e34099c7d8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit >
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown e>
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: /etc/systemd/system/68b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve >
+Jan 16 11:40:53 dhcp-10-51-251-30 systemd[1]: 68b329da9893e34099c7d8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit >
+
+8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit will not be started.
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown escape sequences: "inotifywait -qmre modify -e delete --format "%e %>
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve unit specifiers in inotifywait -qmre modify -e delete --format "%e >
+8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit will not be started.
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown escape sequences: "inotifywait -qmre modify -e delete --format "%e %>
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve unit specifiers in inotifywait -qmre modify -e delete --format "%e >
+8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit will not be started.
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Ignoring unknown escape sequences: "inotifywait -qmre modify -e delete --format "%e %>
+8b329da9893e34099c7d8ad5cb9c940-wimp.service:12: Failed to resolve unit specifiers in inotifywait -qmre modify -e delete --format "%e >
+8ad5cb9c940-wimp.service: Unit configuration has fatal error, unit will not be started.
+
+will not be started.
+scape sequences: "inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inoti>
+unit specifiers in inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inot>
+will not be started.
+scape sequences: "inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inoti>
+unit specifiers in inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inot>
+will not be started.
+scape sequences: "inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inoti>
+unit specifiers in inotifywait -qmre modify -e delete --format "%e %w%f" /../src/ |  while read inotifymessage; do    filepath=\${inot>
+will not be started.
+
+w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pub>
+%w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pu>
+
+w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pub>
+%w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pu>
+
+w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pub>
+%w%f" /../src/ |  while read inotifymessage; do    filepath=\${inotifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../pu>
+
+fymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]>
+ifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE >
+
+fymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]>
+ifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE >
+
+fymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]>
+ifymessage##* }    outpath="\${filepath%.md}.html"; outpath="/../public/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE >
+
+lic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then>
+blic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; the>
+
+lic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then>
+blic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; the>
+
+lic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then>
+blic/\${outpath##*src/}"    if [ "\${inotifymessage%% *}" = DELETE ]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; the>
+
+; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0"
+]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0: Invalid slot
+
+; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0"
+]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0: Invalid slot
+
+; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0"
+]; then rm -rf \$outpath    else sh -c 'if ! [ -d "\${1%/*}" ]; then mkdir "\${1%/*}"; fi    pandoc --quiet -s "\$0: Invalid slot
+
+

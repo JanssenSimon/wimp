@@ -29,29 +29,27 @@ wimp_init() {
     echo "This directory already contains a wimp"
   else
     mkdir -p src template public .wimp
-    #TODO in 15 lines, create wimp service
-    #TODO dynamic service name (sanitizedPath-wimp.service)
-    #TODO have the service exec wimp_watch
-if ! [ -f "/etc/systemd/system/$service_name" ]; then
-  touch /etc/systemd/system/$service_name
-fi
-#echo "[Unit]\Description=Run wimp website generator\
-#[Service]\Type=simple
-#ExecStart=sh -c "
-#  inotifywait -qmre modify -e delete --format "%e %w%f" $wimp_dir/src/ |\
-#  while read inotifymessage;
-#  do
-#    filepath=${inotifymessage##* }
-#    outpath="${filepath%.md}.html"; outpath="$wimp_dir/public/${outpath##*src/}"
-#    if [ "${inotifymessage%% *}" = DELETE ]; then rm -rf $outpath
-#    else sh -c 'outpath="${0%.md}.html"; outpath="./public/${outpath##*src/}"; \
-#if ! [ -d "${outpath%/*}" ]; then mkdir "${outpath%/*}"; fi; \
-#pandoc --quiet -s "$0" -H includes/head.html -B includes/before.html \
-#-A includes/after.html -o $outpath' $filepath; fi
-#  done &"\Restart=on-failure\
-#[Install]\WantedBy=default.target" > /etc/systemd/system/$service_name
-
-#sudo systemctl daemon-reload; sudo systemctl enable $service_name
+    if ! [ -f "/etc/systemd/system/$service_name" ]; then
+      touch /etc/systemd/system/$service_name
+    fi
+    echo "[Unit]
+    Description=Run wimp website generator
+    
+    [Service]
+    Type=simple
+    ExecStart=sh -c \"inotifywait -qmre modify -e delete --format \\\"%e %w%f\\\" $wimp_dir/../src/ |\
+    while read inotifymessage; do
+      filepath=\\\${inotifymessage##* }
+      outpath=\\\"\\\${filepath%.md}.html\\\"; outpath=\\\"$wimp_dir/../public/\\\${outpath##*src/}\\\"
+      if [ \\\"\\\${inotifymessage%% *}\\\" = DELETE ]; then rm -rf \\\$outpath
+      else sh -c 'if ! [ -d \\\"\\\${1%/*}\\\" ]; then mkdir \\\"\\\${1%/*}\\\"; fi
+      pandoc --quiet -s \\\"\\\$0\" -o \\\"\\\$1\\\"' \\\$filepath \\\$outpath; fi
+    done\"
+    Restart=on-failure
+    
+    [Install]
+    WantedBy=default.target" > /etc/systemd/system/$service_name
+    sudo systemctl daemon-reload; sudo systemctl enable $service_name
   fi
 }
 
@@ -75,17 +73,15 @@ pandoc --quiet -s "$0" -H template/head.html -B template/before.html \
 }
 
 wimp_status() {
-  #TODO systemctl status wimp.service
-  echo "TODO"
+  sudo systemctl status $service_name
 }
 
 wimp_restart() {
-  #TODO systemctl restart wimp.service
-  echo "TODO"
+  sudo systemctl restart $service_name
 }
 
 wimp_clean() {
-  #TODO stop
+  sudo systemctl stop $service_name
   rm /etc/systemd/system/$service_name
   rm -rf $wimp_dir/../src $wimp_dir/../public $wimp_dir/../template $wimp_dir
 }
