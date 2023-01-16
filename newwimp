@@ -1,5 +1,19 @@
 #!/bin/sh
 
+# from Jeff Schaller on stackoverflow, thanks Jeff!
+find_config() {
+  if [ -d "$1" ]; then
+    echo "${PWD%/}/$1"
+  elif [ "$PWD" = / ]; then
+    false
+  else
+    (cd .. && find_config "$1") # subshell so we don't affect caller's $PWD
+  fi
+}
+wimp_dir="$(find_config ".wimp")"
+
+service_name=$(echo $wimp_dir | openssl md5 | awk '{print $2 "-wimp.service"}')
+
 # from Charles Duffy on stackoverflow, thanks Charles!
 run_escalated_function() {
   local function_name args_q
@@ -18,10 +32,9 @@ wimp_init() {
     #TODO in 15 lines, create wimp service
     #TODO dynamic service name (sanitizedPath-wimp.service)
     #TODO have the service exec wimp_watch
-service_name=$(pwd)-wimp.service
-#if ! [ -f "/etc/systemd/system/$service_name" ]; then
-#  touch /etc/systemd/system/$service_name
-#fi
+if ! [ -f "/etc/systemd/system/$service_name" ]; then
+  touch /etc/systemd/system/$service_name
+fi
 #echo "[Unit]\Description=Run wimp website generator\
 #[Service]\Type=simple
 #ExecStart=sh -c "
@@ -37,6 +50,7 @@ service_name=$(pwd)-wimp.service
 #-A includes/after.html -o $outpath' $filepath; fi
 #  done &"\Restart=on-failure\
 #[Install]\WantedBy=default.target" > /etc/systemd/system/$service_name
+
 #sudo systemctl daemon-reload; sudo systemctl enable $service_name
   fi
 }
@@ -72,18 +86,8 @@ wimp_restart() {
 
 wimp_clean() {
   #TODO stop
+  rm /etc/systemd/system/$service_name
   rm -rf $wimp_dir/../src $wimp_dir/../public $wimp_dir/../template $wimp_dir
-}
-
-# from Jeff Schaller on stackoverflow, thanks Jeff!
-find_config() {
-  if [ -d "$1" ]; then
-    echo "${PWD%/}/$1"
-  elif [ "$PWD" = / ]; then
-    false
-  else
-    (cd .. && find_config "$1") # subshell so we don't affect caller's $PWD
-  fi
 }
 
 validate() {
@@ -92,7 +96,6 @@ validate() {
   fi
 }
 
-wimp_dir="$(find_config ".wimp")"
 if [ $# -eq 0 ]
 then
   echo -e "usage: wimp <command>\n(run \`wimp help\` for more information)"
